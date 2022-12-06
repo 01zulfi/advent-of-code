@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 file_path = ARGV[0]
 
 datastream = File.read(file_path)
