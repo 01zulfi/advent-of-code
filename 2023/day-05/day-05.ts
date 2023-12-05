@@ -7,8 +7,6 @@ const regex = /\d+/g;
 
 const seeds = input[0].match(regex)?.map(Number);
 
-console.log("seeds", seeds);
-
 const titles = {
   seedToSoil: "seed-to-soil map:",
   soilToFertilizer: "soil-to-fertilizer map:",
@@ -34,38 +32,26 @@ const maps: Map = Object.keys(titles).reduce((acc, title, index) => {
 }, {} as Map);
 
 function Mapper(from: number[], dict: number[][]) {
-  // console.log("dict", dict);
   let fromCopy = from.slice();
   let mappedIndexes: number[] = [];
   dict.forEach((item: number[]) => {
     let destination = item[0];
     let source = item[1];
     let range = item[2];
-    console.log("range", range);
-    let destinationRange = [destination, destination + range - 1];
     let sourceRange = [source, source + range - 1];
-    console.log("destinationrange", destinationRange);
-    console.log("sourcerange", sourceRange);
-    fromCopy = fromCopy.map((item, i) => {
-      if (isInRange(item, sourceRange)) {
+    fromCopy = fromCopy.map((fromItem, i) => {
+      if (isInRange(fromItem, sourceRange)) {
         if (mappedIndexes.includes(i)) {
-          return item;
+          return fromItem;
         }
         mappedIndexes.push(i);
-        let diff = item - source;
+        let diff = fromItem - source;
         return destination + diff;
       }
-      return item;
+      return fromItem;
     });
-    // console.log("from", fromCopy);
   });
   return fromCopy;
-}
-
-function ranger(start: number, end: number) {
-  return Array(end - start + 1)
-    .fill(0)
-    .map((_, idx) => start + idx);
 }
 
 function isInRange(value: number, range: number[]) {
@@ -74,11 +60,50 @@ function isInRange(value: number, range: number[]) {
 
 const locations: number[] = Object.keys(maps).reduce<number[]>((acc, map) => {
   const mapped = Mapper(acc, maps[map]);
-  console.log(map, mapped);
   return mapped;
 }, seeds!);
 
 const lowestLocation = Math.min(...locations);
-console.log(lowestLocation);
-// Mapper(seeds!, maps.fertilizerToWater);
-// console.log(maps.fertilizerToWater);
+console.log("Part 1:", lowestLocation);
+
+function chunkArrayInGroups(arr: number[], size: number) {
+  let a: number[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    a.push(arr.slice(i, i + size));
+  }
+  return a;
+}
+
+const seedsPartTwo = chunkArrayInGroups(input[0].match(regex)!.map(Number), 2);
+
+const locations2 = (seed: number) =>
+  Object.keys(maps).reduce<number[]>(
+    (acc, map) => {
+      const mapped = Mapper(acc, maps[map]);
+      return mapped;
+    },
+    [seed]
+  );
+
+let skip = 100000;
+let fakeMinLocation = Infinity;
+let index = 0;
+seedsPartTwo.forEach(([seed, range]) => {
+  for (let i = seed; i < seed + range; i += skip) {
+    const location = locations2(i);
+    if (location[0] < fakeMinLocation) {
+      fakeMinLocation = location[0];
+      index = i;
+    }
+  }
+});
+
+let lowestLocation2 = Infinity;
+for (let i = index - skip; i < index + skip; i += 1) {
+  const location = locations2(i);
+  if (location[0] < lowestLocation2) {
+    lowestLocation2 = location[0];
+  }
+}
+
+console.log("Part 2", lowestLocation2);
