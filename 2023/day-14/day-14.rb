@@ -98,7 +98,7 @@ def tilt_east(dish)
 end
 
 def indices(array, value)
-  array.each_index.select{|i| array[i] == value}
+  array.each_index.select { |i| array[i] == value }
 end
 
 tilted_north = tilt_north(dish.map(&:dup))
